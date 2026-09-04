@@ -40,12 +40,12 @@ const int MAX_SCREEN_X = 144;
 const int MAX_SCREEN_Y = 168;
 
 const int time_textbox_height = 50;
-const int time_textbox_draw_y = 18;
+const int time_textbox_draw_y = 32;
 const int seconds_textbox_height = 28;
-const int seconds_textbox_draw_y = 66;
-const int arrows_draw_y = 104;
+const int seconds_textbox_draw_y = 80;
+const int arrows_draw_y = 118;
 const int date_textbox_height = 40;
-const int date_textbox_draw_y = 136;
+const int date_textbox_draw_y = 150;
 
 static void battery_callback(BatteryChargeState state) {
   s_battery_level = state.charge_percent;
