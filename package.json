@@ -38,7 +38,7 @@
           "file": "fonts/pixel-digivolve.ttf"
         },
         {
-          "characterRegex": "[0-9:A-Za-z ]",
+          "characterRegex": "[0-9:A-Za-z %]",
           "type": "font",
           "name": "FONT_PIXEL_DIGIVOLVE_16",
           "file": "fonts/pixel-digivolve.ttf"

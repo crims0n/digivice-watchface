@@ -24,6 +24,10 @@ static GBitmap *s_arrow_dark_bitmap;
 static GBitmap *s_arrow_filled_dark_bitmap;
 static int s_current_seconds = 0;
 
+static Layer *s_battery_layer;
+static int s_battery_level = 100;
+static bool s_battery_charging = false;
+
 const int MAX_SCREEN_X = 144;
 const int MAX_SCREEN_Y = 168;
 
@@ -31,6 +35,14 @@ const int time_textbox_height = 60;
 const int time_textbox_draw_y = 32;
 const int date_textbox_height = 40;
 const int date_textbox_draw_y = 128;
+
+static void battery_callback(BatteryChargeState state) {
+  s_battery_level = state.charge_percent;
+  s_battery_charging = state.is_charging;
+  if (s_battery_layer) {
+    layer_mark_dirty(s_battery_layer);
+  }
+}
 
 static void update_time() {
   // Get a tm structure
@@ -93,6 +105,41 @@ static void arrows_update_proc(Layer *layer, GContext *ctx) {
   }
 }
 
+/* BATTERY METER DRAWING PROC */
+static void battery_update_proc(Layer *layer, GContext *ctx) {
+  GRect bounds = layer_get_bounds(layer);
+
+  // Format percentage string
+  static char s_battery_buffer[8];
+  snprintf(s_battery_buffer, sizeof(s_battery_buffer), "%d%%", s_battery_level);
+
+  // Draw percentage text right-aligned
+  graphics_context_set_text_color(ctx, GColorWhite);
+  graphics_draw_text(ctx, s_battery_buffer, s_small_font,
+                     GRect(24, 0, bounds.size.w - 24, bounds.size.h),
+                     GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
+
+  // Battery icon to the left of the text
+  graphics_context_set_stroke_color(ctx, GColorWhite);
+  graphics_draw_rect(ctx, GRect(2, 5, 18, 10));
+
+  // Battery terminal nub on the right (2x4)
+  graphics_context_set_fill_color(ctx, GColorWhite);
+  graphics_fill_rect(ctx, GRect(20, 8, 2, 4), 0, GCornerNone);
+
+  // Battery fill bar (inside 14x6)
+  int fill_w = (14 * s_battery_level) / 100;
+  if (fill_w > 0) {
+    graphics_fill_rect(ctx, GRect(4, 7, fill_w, 6), 0, GCornerNone);
+  }
+
+  // Charging indicator
+  if (s_battery_charging) {
+    graphics_draw_line(ctx, GPoint(11, 7), GPoint(11, 12));
+    graphics_draw_line(ctx, GPoint(9, 9), GPoint(13, 9));
+  }
+}
+
 /* WINDOW LOAD / UNLOAD */
 static void prv_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
@@ -108,56 +155,63 @@ static void prv_window_load(Window *window) {
   s_arrow_filled_dark_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ARROW_FILLED_DARK);
 
   int arrows_width = 4 * 15 + 16;
-  int arrows_x = (bounds.size.w - arrows_width) / 2;
+  int arrows_x = 2;
+  int battery_width = 70;
 
-  // construct time TextLayer
+  // Top Left: Meridiem TextLayer (AM/PM)
+  s_meridiem_layer = text_layer_create(
+      GRect(6, 4, 40, 20));
+
+  // Top Right: Battery Meter Layer
+  s_battery_layer = layer_create(
+      GRect(bounds.size.w - battery_width - 6, 4, battery_width, 20));
+  layer_set_update_proc(s_battery_layer, battery_update_proc);
+
+  // Middle: Time TextLayer
   s_time_layer = text_layer_create(
       GRect(0, time_textbox_draw_y, bounds.size.w, time_textbox_height));
 
-  // construct meridiem TextLayer
-  s_meridiem_layer = text_layer_create(
-      GRect(4, time_textbox_draw_y + 60, arrows_x - 4, time_textbox_height / 2));
-
-  // construct arrows Layer
+  // Below Time: Arrows Layer (flush on left under time)
   s_arrows_layer = layer_create(
       GRect(arrows_x, time_textbox_draw_y + 60, arrows_width, 24));
   layer_set_update_proc(s_arrows_layer, arrows_update_proc);
 
-  // construct seconds TextLayer
+  // Below Time: Seconds TextLayer (on right, flush with time)
   s_seconds_layer = text_layer_create(
-      GRect(arrows_x + arrows_width, time_textbox_draw_y + 60, bounds.size.w - (arrows_x + arrows_width), time_textbox_height / 2));
+      GRect(arrows_x + arrows_width, time_textbox_draw_y + 60, bounds.size.w - (arrows_x + arrows_width) - 6, time_textbox_height / 2));
 
-  // construct date TextLayer
+  // Construct date TextLayer
   s_date_layer = text_layer_create(
       GRect(0, time_textbox_draw_y + 100, bounds.size.w, date_textbox_height));
 
-  // style time TextLayer
+  // Style time TextLayer
   text_layer_set_background_color(s_time_layer, GColorBlack);
   text_layer_set_text_color(s_time_layer, GColorWhite);
   text_layer_set_font(s_time_layer, s_large_font);
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentRight);
 
-  // style seconds TextLayer
+  // Style seconds TextLayer
   text_layer_set_background_color(s_seconds_layer, GColorBlack);
   text_layer_set_text_color(s_seconds_layer, GColorWhite);
   text_layer_set_font(s_seconds_layer, s_medium_font);
   text_layer_set_text_alignment(s_seconds_layer, GTextAlignmentRight);
 
-  // style meridiem TextLayer
+  // Style meridiem TextLayer
   text_layer_set_background_color(s_meridiem_layer, GColorBlack);
   text_layer_set_text_color(s_meridiem_layer, GColorWhite);
   text_layer_set_font(s_meridiem_layer, s_small_font);
   text_layer_set_text_alignment(s_meridiem_layer, GTextAlignmentLeft);
 
-  // style date TextLayer
+  // Style date TextLayer
   text_layer_set_background_color(s_date_layer, GColorBlack);
   text_layer_set_text_color(s_date_layer, GColorWhite);
   text_layer_set_font(s_date_layer, s_small_font);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentRight);
 
   // Add elements to window layer
-  layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_meridiem_layer));
+  layer_add_child(window_layer, s_battery_layer);
+  layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
   layer_add_child(window_layer, s_arrows_layer);
   layer_add_child(window_layer, text_layer_get_layer(s_seconds_layer));
   //layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
@@ -173,8 +227,9 @@ static void prv_window_unload(Window *window) {
   fonts_unload_custom_font(s_large_font);
   fonts_unload_custom_font(s_medium_font);
   fonts_unload_custom_font(s_small_font);
-  // Destroy Arrows Layer & Bitmaps
+  // Destroy Layers & Bitmaps
   layer_destroy(s_arrows_layer);
+  layer_destroy(s_battery_layer);
   gbitmap_destroy(s_arrow_dark_bitmap);
   gbitmap_destroy(s_arrow_filled_dark_bitmap);
 }
@@ -193,6 +248,11 @@ static void init(void) {
 
   // Register with TickTimerService
   tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
+
+  // Register with BatteryStateService
+  battery_state_service_subscribe(battery_callback);
+  battery_callback(battery_state_service_peek());
+
   window_stack_push(s_window, animated);
 
   window_set_background_color(s_window, GColorBlack);
@@ -201,6 +261,7 @@ static void init(void) {
 }
 
 static void deinit(void) {
+  battery_state_service_unsubscribe();
   window_destroy(s_window);
 }
 
