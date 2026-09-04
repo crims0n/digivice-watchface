@@ -4,15 +4,15 @@ A clean, retro digital watchface inspired by the classic 1997 Bandai Digimon Dig
 
 ---
 
-## Screenshots
+## Screenshots & Supported Platforms
 
-<p align="center">
-  <img src="store_assets/screenshot_basalt.png" alt="Pebble Time (Basalt)" width="144" style="padding: 10px;"/>
-  <img src="store_assets/screenshot_diorite.png" alt="Pebble 2 (Diorite)" width="144" style="padding: 10px;"/>
-  <img src="store_assets/screenshot_chalk.png" alt="Pebble Time Round (Chalk)" width="180" style="padding: 10px;"/>
-  <img src="store_assets/screenshot_emery.png" alt="Pebble Time 2 (Emery)" width="160" style="padding: 10px;"/>
-  <img src="store_assets/screenshot_aplite.png" alt="Pebble Classic (Aplite)" width="144" style="padding: 10px;"/>
-</p>
+| Platform | Codename | Display Specs | Screenshot |
+| :--- | :---: | :--- | :---: |
+| **Pebble Time / Time Steel** | `basalt` | 144 × 168 &bull; 64-Color | <img src="store_assets/screenshot_basalt.png" alt="Pebble Time (Basalt)" width="144" /> |
+| **Pebble 2 / 2 SE** | `diorite` | 144 × 168 &bull; Monochrome | <img src="store_assets/screenshot_diorite.png" alt="Pebble 2 (Diorite)" width="144" /> |
+| **Pebble Time Round** | `chalk` | 180 × 180 &bull; Circular 64-Color | <img src="store_assets/screenshot_chalk.png" alt="Pebble Time Round (Chalk)" width="144" /> |
+| **Pebble Time 2** | `emery` | 200 × 228 &bull; 64-Color | <img src="store_assets/screenshot_emery.png" alt="Pebble Time 2 (Emery)" width="144" /> |
+| **Pebble Classic / Steel** | `aplite` | 144 × 168 &bull; Monochrome | <img src="store_assets/screenshot_aplite.png" alt="Pebble Classic (Aplite)" width="144" /> |
 
 ---
 
@@ -28,18 +28,6 @@ A clean, retro digital watchface inspired by the classic 1997 Bandai Digimon Dig
 - **Responsive Multi-Platform Layout**:
   - Automatically adapts to both rectangular displays (Pebble Time, Pebble 2, Pebble Time 2) and circular displays (Pebble Time Round), ensuring all UI elements remain comfortably within the viewport.
 - **Lightweight & Efficient**: Zero extraneous bitmaps; all chevrons and battery icons are drawn procedurally via low-overhead Pebble vector graphics primitives.
-
----
-
-## Supported Platforms
-
-| Platform | Watches | Screen Type | Resolution |
-| :--- | :--- | :--- | :--- |
-| **Aplite** | Pebble Classic, Pebble Steel | Rectangular Monochrome | 144 × 168 |
-| **Basalt** | Pebble Time, Pebble Time Steel | Rectangular 64-Color | 144 × 168 |
-| **Chalk** | Pebble Time Round | Circular 64-Color | 180 × 180 |
-| **Diorite** | Pebble 2, Pebble 2 SE | Rectangular Monochrome | 144 × 168 |
-| **Emery** | Pebble Time 2 | Rectangular 64-Color | 200 × 228 |
 
 ---
 
