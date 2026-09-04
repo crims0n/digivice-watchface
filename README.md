@@ -10,6 +10,7 @@ A clean, retro digital watchface inspired by the classic 1997 Bandai Digimon Dig
 | :--- | :---: | :--- | :---: |
 | **Pebble Time / Time Steel** | `basalt` | 144 × 168 &bull; 64-Color | <img src="store_assets/screenshot_basalt.png" alt="Pebble Time (Basalt)" width="144" /> |
 | **Pebble 2 / 2 SE** | `diorite` | 144 × 168 &bull; Monochrome | <img src="store_assets/screenshot_diorite.png" alt="Pebble 2 (Diorite)" width="144" /> |
+| **Pebble 2 HR / Prototype** | `flint` | 144 × 168 &bull; Monochrome | <img src="store_assets/screenshot_flint.png" alt="Flint" width="144" /> |
 | **Pebble Time Round** | `chalk` | 180 × 180 &bull; Circular 64-Color | <img src="store_assets/screenshot_chalk.png" alt="Pebble Time Round (Chalk)" width="144" /> |
 | **Pebble Round 2** | `gabbro` | 260 × 260 &bull; Circular 64-Color | <img src="store_assets/screenshot_gabbro.png" alt="Pebble Round 2 (Gabbro)" width="144" /> |
 | **Pebble Time 2** | `emery` | 200 × 228 &bull; 64-Color | <img src="store_assets/screenshot_emery.png" alt="Pebble Time 2 (Emery)" width="144" /> |
