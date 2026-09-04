@@ -31,10 +31,13 @@ static bool s_battery_charging = false;
 const int MAX_SCREEN_X = 144;
 const int MAX_SCREEN_Y = 168;
 
-const int time_textbox_height = 60;
-const int time_textbox_draw_y = 24;
+const int time_textbox_height = 50;
+const int time_textbox_draw_y = 18;
+const int seconds_textbox_height = 28;
+const int seconds_textbox_draw_y = 66;
+const int arrows_draw_y = 104;
 const int date_textbox_height = 40;
-const int date_textbox_draw_y = 128;
+const int date_textbox_draw_y = 136;
 
 static void battery_callback(BatteryChargeState state) {
   s_battery_level = state.charge_percent;
@@ -77,6 +80,19 @@ static void update_time() {
 
   // Display this time on the TextLayer
   text_layer_set_text(s_time_layer, s_time_buffer);
+
+  // Align seconds so they right-justify to the right edge of the centered minutes
+  if (s_window && s_seconds_layer && s_large_font) {
+    Layer *window_layer = window_get_root_layer(s_window);
+    GRect window_bounds = layer_get_bounds(window_layer);
+    GSize time_size = graphics_text_layout_get_content_size(
+        s_time_buffer, s_large_font,
+        GRect(0, 0, window_bounds.size.w, time_textbox_height),
+        GTextOverflowModeWordWrap, GTextAlignmentCenter);
+    int time_right_x = (window_bounds.size.w + time_size.w) / 2 - 3;
+    layer_set_frame(text_layer_get_layer(s_seconds_layer),
+                    GRect(0, seconds_textbox_draw_y, time_right_x, seconds_textbox_height));
+  }
 
   // Display seconds on the TextLayer
   text_layer_set_text(s_seconds_layer, s_buffer_seconds);
@@ -164,18 +180,18 @@ static void prv_window_load(Window *window) {
   s_time_layer = text_layer_create(
       GRect(0, time_textbox_draw_y, bounds.size.w, time_textbox_height));
 
-  // Below Time: Seconds TextLayer (on right)
+  // Below Time: Seconds TextLayer (right-justified to minutes)
   s_seconds_layer = text_layer_create(
-      GRect(0, time_textbox_draw_y + 46, bounds.size.w - 6, 28));
+      GRect(0, seconds_textbox_draw_y, bounds.size.w, seconds_textbox_height));
 
-  // Below Seconds: Arrows Layer (Centered)
+  // Below Seconds: Arrows Layer (Centered, lower)
   s_arrows_layer = layer_create(
-      GRect(arrows_x, time_textbox_draw_y + 74, arrows_width, 24));
+      GRect(arrows_x, arrows_draw_y, arrows_width, 24));
   layer_set_update_proc(s_arrows_layer, arrows_update_proc);
 
   // Construct date TextLayer
   s_date_layer = text_layer_create(
-      GRect(0, time_textbox_draw_y + 104, bounds.size.w, date_textbox_height));
+      GRect(0, date_textbox_draw_y, bounds.size.w, date_textbox_height));
 
   // Style time TextLayer
   text_layer_set_background_color(s_time_layer, GColorBlack);
