@@ -2,6 +2,9 @@
 
 A clean, retro digital watchface inspired by the classic 1997 Bandai Digimon Digivice virtual pet, built for Pebble smartwatches on the Rebble SDK.
 
+[![Rebble Appstore](https://img.shields.io/badge/Rebble_Appstore-Available_Now-ff4757?style=for-the-badge)](https://apps.rebble.io/en_US/application/6a9ac7065266090009437eac)  
+👉 **[Download on the Rebble Appstore](https://apps.rebble.io/en_US/application/6a9ac7065266090009437eac)**
+
 ---
 
 ## Screenshots & Supported Platforms
