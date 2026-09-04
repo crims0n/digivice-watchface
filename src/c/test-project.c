@@ -63,9 +63,13 @@ static void update_time() {
   static char s_buffer_seconds[4];
   strftime(s_buffer_seconds, sizeof(s_buffer_seconds), "%S", tick_time);
 
-  // Write the current AM/PM indicator into a buffer
+  // Write the current AM/PM indicator into a buffer (only in 12h mode)
   static char s_buffer_meridiem[4];
-  strftime(s_buffer_meridiem, sizeof(s_buffer_meridiem), "%p", tick_time);
+  if (clock_is_24h_style()) {
+    s_buffer_meridiem[0] = '\0';
+  } else {
+    strftime(s_buffer_meridiem, sizeof(s_buffer_meridiem), "%p", tick_time);
+  }
 
   // Write the current date into a buffer
   static char s_date_buffer[16];
