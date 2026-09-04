@@ -153,7 +153,7 @@ static void prv_window_load(Window *window) {
 
   // Top Left: Meridiem TextLayer (AM/PM)
   s_meridiem_layer = text_layer_create(
-      GRect(6, 4, 40, 20));
+      GRect(6, 0, 40, 20));
 
   // Top Right: Battery Meter Layer (icon only)
   s_battery_layer = layer_create(
