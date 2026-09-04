@@ -27,7 +27,7 @@ static const GPathInfo TRIANGLE_POINTS = {
   .num_points = 3,
   .points = (GPoint []) {
     {0, 0},
-    {22, 18},
+    {18, 18},
     {0, 36}
   }
 };
@@ -129,7 +129,7 @@ static void arrows_update_proc(Layer *layer, GContext *ctx) {
       is_solid = (i >= sub - 5);
     }
 
-    int ox = i * 26;
+    int ox = i * 27;
 
     if (is_solid) {
       graphics_context_set_fill_color(ctx, GColorWhite);
@@ -182,7 +182,7 @@ static void prv_window_load(Window *window) {
   // Create GPath
   s_triangle_path = gpath_create(&TRIANGLE_POINTS);
 
-  int arrows_width = 4 * 26 + 24;
+  int arrows_width = 4 * 27 + 20;
   int arrows_x = (bounds.size.w - arrows_width) / 2;
   int battery_width = 24;
 
