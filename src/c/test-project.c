@@ -39,6 +39,15 @@ static bool s_battery_charging = false;
 const int MAX_SCREEN_X = 144;
 const int MAX_SCREEN_Y = 168;
 
+static inline int get_content_offset_y(GRect bounds) {
+#if defined(PBL_ROUND)
+  if (bounds.size.h == 180) {
+    return -4;
+  }
+#endif
+  return (bounds.size.h - 168) / 2;
+}
+
 const int time_textbox_height = 50;
 const int time_textbox_draw_y = 32;
 const int seconds_textbox_height = 28;
@@ -94,9 +103,11 @@ static void update_time() {
         s_time_buffer, s_large_font,
         GRect(0, 0, window_bounds.size.w, time_textbox_height),
         GTextOverflowModeWordWrap, GTextAlignmentCenter);
+    int content_offset_y = get_content_offset_y(window_bounds);
+    int seconds_draw_y = seconds_textbox_draw_y + content_offset_y;
     int time_right_x = (window_bounds.size.w + time_size.w) / 2 - 3;
     layer_set_frame(text_layer_get_layer(s_seconds_layer),
-                    GRect(0, seconds_textbox_draw_y, time_right_x, seconds_textbox_height));
+                    GRect(0, seconds_draw_y, time_right_x, seconds_textbox_height));
   }
 
   // Display seconds on the TextLayer
@@ -179,30 +190,39 @@ static void prv_window_load(Window *window) {
   // Create GPath
   s_triangle_path = gpath_create(&TRIANGLE_POINTS);
 
+  int content_offset_y = get_content_offset_y(bounds);
+  int time_draw_y = time_textbox_draw_y + content_offset_y;
+  int seconds_draw_y = seconds_textbox_draw_y + content_offset_y;
+  int current_arrows_draw_y = arrows_draw_y + content_offset_y;
+
   int arrows_width = 1 + 4 * 27 + 21;
   int arrows_x = (bounds.size.w - arrows_width) / 2;
   int battery_width = 24;
 
-  // Top Left: Meridiem TextLayer (AM/PM)
-  s_meridiem_layer = text_layer_create(
+  // Top Left: Meridiem TextLayer (AM/PM) - centered top on round
+  GRect meridiem_frame = PBL_IF_ROUND_ELSE(
+      GRect((bounds.size.w / 2) - 40, 8 + (bounds.size.h > 180 ? (bounds.size.h - 180) / 4 : 0), 32, 20),
       GRect(6, 0, 40, 20));
+  s_meridiem_layer = text_layer_create(meridiem_frame);
 
-  // Top Right: Battery Meter Layer (icon only)
-  s_battery_layer = layer_create(
+  // Top Right: Battery Meter Layer (icon only) - next to AM/PM on round
+  GRect battery_frame = PBL_IF_ROUND_ELSE(
+      GRect((bounds.size.w / 2) + 6, 13 + (bounds.size.h > 180 ? (bounds.size.h - 180) / 4 : 0), battery_width, 12),
       GRect(bounds.size.w - battery_width - 6, 5, battery_width, 12));
+  s_battery_layer = layer_create(battery_frame);
   layer_set_update_proc(s_battery_layer, battery_update_proc);
 
   // Middle: Time TextLayer (Centered)
   s_time_layer = text_layer_create(
-      GRect(0, time_textbox_draw_y, bounds.size.w, time_textbox_height));
+      GRect(0, time_draw_y, bounds.size.w, time_textbox_height));
 
   // Below Time: Seconds TextLayer (right-justified to minutes)
   s_seconds_layer = text_layer_create(
-      GRect(0, seconds_textbox_draw_y, bounds.size.w, seconds_textbox_height));
+      GRect(0, seconds_draw_y, bounds.size.w, seconds_textbox_height));
 
   // Below Seconds: Arrows Layer (Centered, lower)
   s_arrows_layer = layer_create(
-      GRect(arrows_x, arrows_draw_y, arrows_width, 38));
+      GRect(arrows_x, current_arrows_draw_y, arrows_width, 38));
   layer_set_update_proc(s_arrows_layer, arrows_update_proc);
 
   // Construct date TextLayer
@@ -225,7 +245,7 @@ static void prv_window_load(Window *window) {
   text_layer_set_background_color(s_meridiem_layer, GColorBlack);
   text_layer_set_text_color(s_meridiem_layer, GColorWhite);
   text_layer_set_font(s_meridiem_layer, s_small_font);
-  text_layer_set_text_alignment(s_meridiem_layer, GTextAlignmentLeft);
+  text_layer_set_text_alignment(s_meridiem_layer, PBL_IF_ROUND_ELSE(GTextAlignmentRight, GTextAlignmentLeft));
 
   // Style date TextLayer
   text_layer_set_background_color(s_date_layer, GColorBlack);
