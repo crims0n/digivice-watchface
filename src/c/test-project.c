@@ -32,7 +32,7 @@ const int MAX_SCREEN_X = 144;
 const int MAX_SCREEN_Y = 168;
 
 const int time_textbox_height = 60;
-const int time_textbox_draw_y = 32;
+const int time_textbox_draw_y = 24;
 const int date_textbox_height = 40;
 const int date_textbox_draw_y = 128;
 
@@ -148,7 +148,7 @@ static void prv_window_load(Window *window) {
   s_arrow_filled_dark_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ARROW_FILLED_DARK);
 
   int arrows_width = 4 * 15 + 16;
-  int arrows_x = 2;
+  int arrows_x = (bounds.size.w - arrows_width) / 2;
   int battery_width = 24;
 
   // Top Left: Meridiem TextLayer (AM/PM)
@@ -160,28 +160,28 @@ static void prv_window_load(Window *window) {
       GRect(bounds.size.w - battery_width - 6, 5, battery_width, 12));
   layer_set_update_proc(s_battery_layer, battery_update_proc);
 
-  // Middle: Time TextLayer
+  // Middle: Time TextLayer (Centered)
   s_time_layer = text_layer_create(
       GRect(0, time_textbox_draw_y, bounds.size.w, time_textbox_height));
 
-  // Below Time: Arrows Layer (flush on left under time)
-  s_arrows_layer = layer_create(
-      GRect(arrows_x, time_textbox_draw_y + 60, arrows_width, 24));
-  layer_set_update_proc(s_arrows_layer, arrows_update_proc);
-
-  // Below Time: Seconds TextLayer (on right, flush with time)
+  // Below Time: Seconds TextLayer (on right)
   s_seconds_layer = text_layer_create(
-      GRect(arrows_x + arrows_width, time_textbox_draw_y + 60, bounds.size.w - (arrows_x + arrows_width) - 6, time_textbox_height / 2));
+      GRect(0, time_textbox_draw_y + 46, bounds.size.w - 6, 28));
+
+  // Below Seconds: Arrows Layer (Centered)
+  s_arrows_layer = layer_create(
+      GRect(arrows_x, time_textbox_draw_y + 74, arrows_width, 24));
+  layer_set_update_proc(s_arrows_layer, arrows_update_proc);
 
   // Construct date TextLayer
   s_date_layer = text_layer_create(
-      GRect(0, time_textbox_draw_y + 100, bounds.size.w, date_textbox_height));
+      GRect(0, time_textbox_draw_y + 104, bounds.size.w, date_textbox_height));
 
   // Style time TextLayer
   text_layer_set_background_color(s_time_layer, GColorBlack);
   text_layer_set_text_color(s_time_layer, GColorWhite);
   text_layer_set_font(s_time_layer, s_large_font);
-  text_layer_set_text_alignment(s_time_layer, GTextAlignmentRight);
+  text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
 
   // Style seconds TextLayer
   text_layer_set_background_color(s_seconds_layer, GColorBlack);
@@ -205,8 +205,8 @@ static void prv_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(s_meridiem_layer));
   layer_add_child(window_layer, s_battery_layer);
   layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
-  layer_add_child(window_layer, s_arrows_layer);
   layer_add_child(window_layer, text_layer_get_layer(s_seconds_layer));
+  layer_add_child(window_layer, s_arrows_layer);
   //layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
 }
 
