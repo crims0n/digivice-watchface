@@ -74,13 +74,10 @@ static void update_time() {
   static char s_buffer_seconds[4];
   strftime(s_buffer_seconds, sizeof(s_buffer_seconds), "%S", tick_time);
 
-  // Write the current AM/PM indicator into a buffer (only in 12h mode)
+  // Write the current AM/PM indicator into a buffer (always show regardless of 12/24h or locale)
   static char s_buffer_meridiem[4];
-  if (clock_is_24h_style()) {
-    s_buffer_meridiem[0] = '\0';
-  } else {
-    strftime(s_buffer_meridiem, sizeof(s_buffer_meridiem), "%p", tick_time);
-  }
+  snprintf(s_buffer_meridiem, sizeof(s_buffer_meridiem), "%s",
+           tick_time->tm_hour < 12 ? "AM" : "PM");
 
   // Write the current date into a buffer
   static char s_date_buffer[16];
@@ -129,7 +126,7 @@ static void arrows_update_proc(Layer *layer, GContext *ctx) {
       is_solid = (i >= sub - 5);
     }
 
-    int ox = i * 27;
+    int ox = 1 + i * 27;
 
     if (is_solid) {
       graphics_context_set_fill_color(ctx, GColorWhite);
@@ -137,10 +134,10 @@ static void arrows_update_proc(Layer *layer, GContext *ctx) {
       gpath_draw_filled(ctx, s_triangle_path);
     } else {
       graphics_context_set_stroke_color(ctx, GColorWhite);
-      gpath_move_to(s_triangle_path, GPoint(ox, 0));
-      gpath_draw_outline_open(ctx, s_triangle_path);
-      gpath_move_to(s_triangle_path, GPoint(ox + 1, 0));
-      gpath_draw_outline_open(ctx, s_triangle_path);
+      for (int off = -1; off <= 2; off++) {
+        gpath_move_to(s_triangle_path, GPoint(ox + off, 0));
+        gpath_draw_outline_open(ctx, s_triangle_path);
+      }
     }
   }
 }
@@ -182,7 +179,7 @@ static void prv_window_load(Window *window) {
   // Create GPath
   s_triangle_path = gpath_create(&TRIANGLE_POINTS);
 
-  int arrows_width = 4 * 27 + 20;
+  int arrows_width = 1 + 4 * 27 + 21;
   int arrows_x = (bounds.size.w - arrows_width) / 2;
   int battery_width = 24;
 
