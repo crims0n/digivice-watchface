@@ -27,8 +27,8 @@ static const GPathInfo TRIANGLE_POINTS = {
   .num_points = 3,
   .points = (GPoint []) {
     {0, 0},
-    {22, 11},
-    {0, 22}
+    {22, 18},
+    {0, 36}
   }
 };
 
@@ -130,14 +130,17 @@ static void arrows_update_proc(Layer *layer, GContext *ctx) {
     }
 
     int ox = i * 26;
-    gpath_move_to(s_triangle_path, GPoint(ox, 0));
 
     if (is_solid) {
       graphics_context_set_fill_color(ctx, GColorWhite);
+      gpath_move_to(s_triangle_path, GPoint(ox, 0));
       gpath_draw_filled(ctx, s_triangle_path);
     } else {
       graphics_context_set_stroke_color(ctx, GColorWhite);
-      gpath_draw_outline(ctx, s_triangle_path);
+      gpath_move_to(s_triangle_path, GPoint(ox, 0));
+      gpath_draw_outline_open(ctx, s_triangle_path);
+      gpath_move_to(s_triangle_path, GPoint(ox + 1, 0));
+      gpath_draw_outline_open(ctx, s_triangle_path);
     }
   }
 }
@@ -179,7 +182,7 @@ static void prv_window_load(Window *window) {
   // Create GPath
   s_triangle_path = gpath_create(&TRIANGLE_POINTS);
 
-  int arrows_width = 4 * 26 + 23;
+  int arrows_width = 4 * 26 + 24;
   int arrows_x = (bounds.size.w - arrows_width) / 2;
   int battery_width = 24;
 
@@ -202,7 +205,7 @@ static void prv_window_load(Window *window) {
 
   // Below Seconds: Arrows Layer (Centered, lower)
   s_arrows_layer = layer_create(
-      GRect(arrows_x, arrows_draw_y, arrows_width, 24));
+      GRect(arrows_x, arrows_draw_y, arrows_width, 38));
   layer_set_update_proc(s_arrows_layer, arrows_update_proc);
 
   // Construct date TextLayer
