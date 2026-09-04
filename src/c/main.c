@@ -1,11 +1,4 @@
 #include <pebble.h>
-/* TODO:
--add date
--animated sprite
--weather info?
-
-target screen size 144*168
-*/
 
 /* GLOBAL VARIABLES */
 static Window *s_window;
@@ -13,7 +6,6 @@ static Window *s_window;
 static TextLayer *s_time_layer;
 static TextLayer *s_seconds_layer;
 static TextLayer *s_meridiem_layer;
-static TextLayer *s_date_layer;
 
 static GFont s_large_font;
 static GFont s_medium_font;
@@ -36,9 +28,6 @@ static Layer *s_battery_layer;
 static int s_battery_level = 100;
 static bool s_battery_charging = false;
 
-const int MAX_SCREEN_X = 144;
-const int MAX_SCREEN_Y = 168;
-
 static inline int get_content_offset_y(GRect bounds) {
 #if defined(PBL_ROUND)
   if (bounds.size.h == 180) {
@@ -53,8 +42,6 @@ const int time_textbox_draw_y = 32;
 const int seconds_textbox_height = 28;
 const int seconds_textbox_draw_y = 80;
 const int arrows_draw_y = 118;
-const int date_textbox_height = 40;
-const int date_textbox_draw_y = 150;
 
 static void battery_callback(BatteryChargeState state) {
   s_battery_level = state.charge_percent;
@@ -65,7 +52,6 @@ static void battery_callback(BatteryChargeState state) {
 }
 
 static void update_time() {
-  // Get a tm structure
   time_t temp = time(NULL);
   struct tm *tick_time = localtime(&temp);
 
@@ -74,25 +60,21 @@ static void update_time() {
     layer_mark_dirty(s_arrows_layer);
   }
 
-  // Write the current hours and minutes into a buffer
+  // Write current hours and minutes into buffer
   static char s_time_buffer[8];
   strftime(s_time_buffer, sizeof(s_time_buffer), clock_is_24h_style() ?
                                           "%H:%M" : "%I:%M", tick_time);
 
-  // Write the current seconds into a buffer
+  // Write current seconds into buffer
   static char s_buffer_seconds[4];
   strftime(s_buffer_seconds, sizeof(s_buffer_seconds), "%S", tick_time);
 
-  // Write the current AM/PM indicator into a buffer (always show regardless of 12/24h or locale)
+  // Write AM/PM indicator (always show regardless of 12/24h setting or locale)
   static char s_buffer_meridiem[4];
   snprintf(s_buffer_meridiem, sizeof(s_buffer_meridiem), "%s",
            tick_time->tm_hour < 12 ? "AM" : "PM");
 
-  // Write the current date into a buffer
-  static char s_date_buffer[16];
-  strftime(s_date_buffer, sizeof(s_date_buffer), "%b %d", tick_time);
-
-  // Display this time on the TextLayer
+  // Display time on TextLayer
   text_layer_set_text(s_time_layer, s_time_buffer);
 
   // Align seconds so they right-justify to the right edge of the centered minutes
@@ -110,15 +92,13 @@ static void update_time() {
                     GRect(0, seconds_draw_y, time_right_x, seconds_textbox_height));
   }
 
-  // Display seconds on the TextLayer
+  // Display seconds on TextLayer
   text_layer_set_text(s_seconds_layer, s_buffer_seconds);
 
-  // Display AM/PM on the TextLayer
+  // Display AM/PM on TextLayer
   text_layer_set_text(s_meridiem_layer, s_buffer_meridiem);
-
-  // Display this date on the TextLayer
-  text_layer_set_text(s_date_layer, s_date_buffer);
 }
+
 /* TICK HANDLER */
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_time();
@@ -182,12 +162,12 @@ static void prv_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
-  // Create GFont
+  // Create GFonts
   s_large_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_PIXEL_DIGIVOLVE_48));
   s_medium_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_PIXEL_DIGIVOLVE_24));
   s_small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_PIXEL_DIGIVOLVE_16));
 
-  // Create GPath
+  // Create GPath for arrow chevrons
   s_triangle_path = gpath_create(&TRIANGLE_POINTS);
 
   int content_offset_y = get_content_offset_y(bounds);
@@ -225,10 +205,6 @@ static void prv_window_load(Window *window) {
       GRect(arrows_x, current_arrows_draw_y, arrows_width, 38));
   layer_set_update_proc(s_arrows_layer, arrows_update_proc);
 
-  // Construct date TextLayer
-  s_date_layer = text_layer_create(
-      GRect(0, date_textbox_draw_y, bounds.size.w, date_textbox_height));
-
   // Style time TextLayer
   text_layer_set_background_color(s_time_layer, GColorBlack);
   text_layer_set_text_color(s_time_layer, GColorWhite);
@@ -247,32 +223,23 @@ static void prv_window_load(Window *window) {
   text_layer_set_font(s_meridiem_layer, s_small_font);
   text_layer_set_text_alignment(s_meridiem_layer, PBL_IF_ROUND_ELSE(GTextAlignmentRight, GTextAlignmentLeft));
 
-  // Style date TextLayer
-  text_layer_set_background_color(s_date_layer, GColorBlack);
-  text_layer_set_text_color(s_date_layer, GColorWhite);
-  text_layer_set_font(s_date_layer, s_small_font);
-  text_layer_set_text_alignment(s_date_layer, GTextAlignmentRight);
-
   // Add elements to window layer
   layer_add_child(window_layer, text_layer_get_layer(s_meridiem_layer));
   layer_add_child(window_layer, s_battery_layer);
   layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_seconds_layer));
   layer_add_child(window_layer, s_arrows_layer);
-  //layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
 }
 
 static void prv_window_unload(Window *window) {
-  // Destroy TextLayer
   text_layer_destroy(s_time_layer);
   text_layer_destroy(s_seconds_layer);
   text_layer_destroy(s_meridiem_layer);
-  text_layer_destroy(s_date_layer);
-  // Unload GFont
+
   fonts_unload_custom_font(s_large_font);
   fonts_unload_custom_font(s_medium_font);
   fonts_unload_custom_font(s_small_font);
-  // Destroy Layers & Paths
+
   layer_destroy(s_arrows_layer);
   layer_destroy(s_battery_layer);
   gpath_destroy(s_triangle_path);
@@ -283,12 +250,10 @@ static void prv_window_unload(Window *window) {
 static void init(void) {
   s_window = window_create();
 
-  //window_set_click_config_provider(s_window, prv_click_config_provider);
   window_set_window_handlers(s_window, (WindowHandlers) {
     .load = prv_window_load,
     .unload = prv_window_unload,
   });
-  const bool animated = true;
 
   // Register with TickTimerService
   tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
@@ -297,8 +262,7 @@ static void init(void) {
   battery_state_service_subscribe(battery_callback);
   battery_callback(battery_state_service_peek());
 
-  window_stack_push(s_window, animated);
-
+  window_stack_push(s_window, true);
   window_set_background_color(s_window, GColorBlack);
 
   update_time();
@@ -309,13 +273,10 @@ static void deinit(void) {
   window_destroy(s_window);
 }
 
-/* MAIN program entry point */
+/* MAIN entry point */
 
 int main(void) {
   init();
-
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", s_window);
-
   app_event_loop();
   deinit();
 }

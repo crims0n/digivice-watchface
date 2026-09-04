@@ -2,8 +2,16 @@
   "name": "digivice-watchface",
   "author": "crims0n",
   "version": "1.0.0",
-  "keywords": ["pebble-app", "digivice", "digimon", "tamagotchi"],
-  "private": true,
+  "description": "Retro digital watchface inspired by the classic Digimon Digivice virtual pet.",
+  "keywords": [
+    "pebble-app",
+    "pebble-watchface",
+    "digivice",
+    "digimon",
+    "vpet",
+    "retro"
+  ],
+  "license": "MIT",
   "dependencies": {},
   "pebble": {
     "displayName": "Digivice Watchface",
@@ -20,9 +28,6 @@
     "watchapp": {
       "watchface": true
     },
-    "messageKeys": [
-      "dummy"
-    ],
     "resources": {
       "media": [
         {
@@ -42,16 +47,6 @@
           "type": "font",
           "name": "FONT_PIXEL_DIGIVOLVE_16",
           "file": "fonts/pixel-digivolve.ttf"
-        },
-        {
-          "type": "bitmap",
-          "name": "ARROW_DARK",
-          "file": "images/arrow-dark.png"
-        },
-        {
-          "type": "bitmap",
-          "name": "ARROW_FILLED_DARK",
-          "file": "images/arrow-filled-dark.png"
         }
       ]
     }
