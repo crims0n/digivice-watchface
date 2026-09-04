@@ -20,9 +20,17 @@ static GFont s_medium_font;
 static GFont s_small_font;
 
 static Layer *s_arrows_layer;
-static GBitmap *s_arrow_dark_bitmap;
-static GBitmap *s_arrow_filled_dark_bitmap;
+static GPath *s_triangle_path;
 static int s_current_seconds = 0;
+
+static const GPathInfo TRIANGLE_POINTS = {
+  .num_points = 3,
+  .points = (GPoint []) {
+    {0, 0},
+    {22, 11},
+    {0, 22}
+  }
+};
 
 static Layer *s_battery_layer;
 static int s_battery_level = 100;
@@ -120,8 +128,17 @@ static void arrows_update_proc(Layer *layer, GContext *ctx) {
     } else {
       is_solid = (i >= sub - 5);
     }
-    GBitmap *bmp = is_solid ? s_arrow_filled_dark_bitmap : s_arrow_dark_bitmap;
-    graphics_draw_bitmap_in_rect(ctx, bmp, GRect(i * 15, 0, 16, 24));
+
+    int ox = i * 26;
+    gpath_move_to(s_triangle_path, GPoint(ox, 0));
+
+    if (is_solid) {
+      graphics_context_set_fill_color(ctx, GColorWhite);
+      gpath_draw_filled(ctx, s_triangle_path);
+    } else {
+      graphics_context_set_stroke_color(ctx, GColorWhite);
+      gpath_draw_outline(ctx, s_triangle_path);
+    }
   }
 }
 
@@ -159,11 +176,10 @@ static void prv_window_load(Window *window) {
   s_medium_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_PIXEL_DIGIVOLVE_24));
   s_small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_PIXEL_DIGIVOLVE_16));
 
-  // Create GBitmap
-  s_arrow_dark_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ARROW_DARK);
-  s_arrow_filled_dark_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ARROW_FILLED_DARK);
+  // Create GPath
+  s_triangle_path = gpath_create(&TRIANGLE_POINTS);
 
-  int arrows_width = 4 * 15 + 16;
+  int arrows_width = 4 * 26 + 23;
   int arrows_x = (bounds.size.w - arrows_width) / 2;
   int battery_width = 24;
 
@@ -236,11 +252,10 @@ static void prv_window_unload(Window *window) {
   fonts_unload_custom_font(s_large_font);
   fonts_unload_custom_font(s_medium_font);
   fonts_unload_custom_font(s_small_font);
-  // Destroy Layers & Bitmaps
+  // Destroy Layers & Paths
   layer_destroy(s_arrows_layer);
   layer_destroy(s_battery_layer);
-  gbitmap_destroy(s_arrow_dark_bitmap);
-  gbitmap_destroy(s_arrow_filled_dark_bitmap);
+  gpath_destroy(s_triangle_path);
 }
 
 /* INIT / DEINIT */
