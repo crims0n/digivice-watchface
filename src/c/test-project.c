@@ -107,36 +107,25 @@ static void arrows_update_proc(Layer *layer, GContext *ctx) {
 
 /* BATTERY METER DRAWING PROC */
 static void battery_update_proc(Layer *layer, GContext *ctx) {
-  GRect bounds = layer_get_bounds(layer);
-
-  // Format percentage string
-  static char s_battery_buffer[8];
-  snprintf(s_battery_buffer, sizeof(s_battery_buffer), "%d%%", s_battery_level);
-
-  // Draw percentage text right-aligned
-  graphics_context_set_text_color(ctx, GColorWhite);
-  graphics_draw_text(ctx, s_battery_buffer, s_small_font,
-                     GRect(24, 0, bounds.size.w - 24, bounds.size.h),
-                     GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
-
-  // Battery icon to the left of the text
   graphics_context_set_stroke_color(ctx, GColorWhite);
-  graphics_draw_rect(ctx, GRect(2, 5, 18, 10));
-
-  // Battery terminal nub on the right (2x4)
   graphics_context_set_fill_color(ctx, GColorWhite);
-  graphics_fill_rect(ctx, GRect(20, 8, 2, 4), 0, GCornerNone);
 
-  // Battery fill bar (inside 14x6)
-  int fill_w = (14 * s_battery_level) / 100;
+  // Battery outer body: 20x12
+  graphics_draw_rect(ctx, GRect(0, 0, 20, 12));
+
+  // Battery terminal nub on the right (2x6 centered vertically)
+  graphics_fill_rect(ctx, GRect(20, 3, 2, 6), 0, GCornerNone);
+
+  // Battery fill bar inside: 16x8 available
+  int fill_w = (16 * s_battery_level) / 100;
   if (fill_w > 0) {
-    graphics_fill_rect(ctx, GRect(4, 7, fill_w, 6), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(2, 2, fill_w, 8), 0, GCornerNone);
   }
 
   // Charging indicator
   if (s_battery_charging) {
-    graphics_draw_line(ctx, GPoint(11, 7), GPoint(11, 12));
-    graphics_draw_line(ctx, GPoint(9, 9), GPoint(13, 9));
+    graphics_draw_line(ctx, GPoint(10, 3), GPoint(10, 8));
+    graphics_draw_line(ctx, GPoint(8, 5), GPoint(12, 5));
   }
 }
 
@@ -156,15 +145,15 @@ static void prv_window_load(Window *window) {
 
   int arrows_width = 4 * 15 + 16;
   int arrows_x = 2;
-  int battery_width = 70;
+  int battery_width = 24;
 
   // Top Left: Meridiem TextLayer (AM/PM)
   s_meridiem_layer = text_layer_create(
       GRect(6, 4, 40, 20));
 
-  // Top Right: Battery Meter Layer
+  // Top Right: Battery Meter Layer (icon only)
   s_battery_layer = layer_create(
-      GRect(bounds.size.w - battery_width - 6, 4, battery_width, 20));
+      GRect(bounds.size.w - battery_width - 6, 5, battery_width, 12));
   layer_set_update_proc(s_battery_layer, battery_update_proc);
 
   // Middle: Time TextLayer
